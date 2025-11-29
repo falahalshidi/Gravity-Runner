@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Runner - لعبة انعكاس الجاذبية</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <!-- Score Display -->
+        <div class="score-display">
+            <div class="score-item">
+                <span class="score-label">Score</span>
+                <span class="score-value" id="currentScore">0</span>
+            </div>
+            <div class="score-item">
+                <span class="score-label">Best</span>
+                <span class="score-value" id="highScore">0</span>
+            </div>
+        </div>
+
+        <!-- Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Start Screen -->
+        <div class="overlay" id="startScreen">
+            <div class="modal">
+                <h1 class="game-title">⚡ Gravity Runner</h1>
+                <p class="instructions">
+                    Press <kbd>SPACE</kbd> or <kbd>CLICK</kbd> to flip gravity<br>
+                    Avoid obstacles and survive as long as possible!
+                </p>
+                <button class="btn-primary" id="startBtn">Start Game</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="overlay hidden" id="gameOverScreen">
+            <div class="modal">
+                <h2 class="game-over-title">Game Over!</h2>
+                <div class="final-score">
+                    <span class="final-score-label">Your Score</span>
+                    <span class="final-score-value" id="finalScore">0</span>
+                </div>
+                <div class="high-score-badge" id="newHighScore">
+                    🏆 New High Score!
+                </div>
+                <button class="btn-primary" id="restartBtn">Play Again</button>
+            </div>
+        </div>
+
+        <!-- Instructions Hint -->
+        <div class="hint" id="gameHint">
+            Press SPACE or CLICK to flip gravity
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
