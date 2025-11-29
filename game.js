@@ -56,9 +56,35 @@ const newHighScoreEl = document.getElementById('newHighScore');
 const startBtn = document.getElementById('startBtn');
 const restartBtn = document.getElementById('restartBtn');
 
-// Set canvas size
-canvas.width = CONFIG.canvas.width;
-canvas.height = CONFIG.canvas.height;
+// ============================================
+// RESPONSIVE CANVAS SIZING
+// ============================================
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    const maxWidth = Math.min(window.innerWidth - 20, CONFIG.canvas.width);
+    const maxHeight = Math.min(window.innerHeight * 0.7, CONFIG.canvas.height);
+
+    // Maintain aspect ratio
+    const aspectRatio = CONFIG.canvas.width / CONFIG.canvas.height;
+    let newWidth = maxWidth;
+    let newHeight = newWidth / aspectRatio;
+
+    if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        newWidth = newHeight * aspectRatio;
+    }
+
+    canvas.width = CONFIG.canvas.width;
+    canvas.height = CONFIG.canvas.height;
+    canvas.style.width = newWidth + 'px';
+    canvas.style.height = newHeight + 'px';
+}
+
+// Initial resize
+resizeCanvas();
+
+// Resize on window resize
+window.addEventListener('resize', resizeCanvas);
 
 // Display initial high score
 highScoreEl.textContent = gameState.highScore;
@@ -81,10 +107,10 @@ class Player {
     flipGravity() {
         this.gravity *= -1;
         this.velocityY = 0; // Reset velocity for smooth transition
-        
+
         // Create particle effect
         createParticles(this.x + this.width / 2, this.y + this.height / 2);
-        
+
         // Hide hint after first flip
         if (!gameHint.classList.contains('hidden')) {
             gameHint.classList.add('hidden');
@@ -94,12 +120,12 @@ class Player {
     update() {
         // Apply gravity
         this.velocityY += this.gravity;
-        
+
         // Limit fall speed
         if (Math.abs(this.velocityY) > CONFIG.player.maxSpeed) {
             this.velocityY = Math.sign(this.velocityY) * CONFIG.player.maxSpeed;
         }
-        
+
         this.y += this.velocityY;
 
         // Ground collision (bottom)
@@ -108,7 +134,7 @@ class Player {
             this.velocityY = 0;
             this.isOnGround = true;
         }
-        
+
         // Ceiling collision (top)
         if (this.gravity < 0 && this.y <= CONFIG.game.groundHeight) {
             this.y = CONFIG.game.groundHeight;
@@ -122,28 +148,28 @@ class Player {
 
     draw() {
         ctx.save();
-        
+
         // Translate to player center
         ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
         ctx.rotate(this.rotation);
-        
+
         // Draw glow effect
         ctx.shadowBlur = 20;
         ctx.shadowColor = CONFIG.player.glowColor;
-        
+
         // Draw player
         ctx.fillStyle = CONFIG.player.color;
         ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
-        
+
         // Draw eyes based on gravity
         ctx.fillStyle = '#1e1b4b';
         const eyeSize = 6;
         const eyeOffset = 8;
         const eyeY = this.gravity > 0 ? -8 : 8;
-        
+
         ctx.fillRect(-eyeOffset, eyeY - eyeSize / 2, eyeSize, eyeSize);
         ctx.fillRect(eyeOffset - eyeSize, eyeY - eyeSize / 2, eyeSize, eyeSize);
-        
+
         ctx.restore();
     }
 
@@ -176,20 +202,20 @@ class Obstacle {
 
     draw() {
         ctx.save();
-        
+
         // Draw glow
         ctx.shadowBlur = 15;
         ctx.shadowColor = CONFIG.obstacle.glowColor;
-        
+
         // Draw obstacle
         ctx.fillStyle = CONFIG.obstacle.color;
         ctx.fillRect(this.x, this.y, this.width, this.height);
-        
+
         // Draw edge highlight
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.lineWidth = 2;
         ctx.strokeRect(this.x, this.y, this.width, this.height);
-        
+
         ctx.restore();
     }
 
@@ -264,7 +290,7 @@ function createParticles(x, y) {
 // ============================================
 function generateObstacle() {
     const gap = Math.random() * (CONFIG.obstacle.maxGap - CONFIG.obstacle.minGap) + CONFIG.obstacle.minGap;
-    
+
     if (gameState.frame - lastObstacleFrame > gap / CONFIG.obstacle.speed) {
         const isTop = Math.random() > 0.5;
         obstacles.push(new Obstacle(canvas.width, isTop));
@@ -291,11 +317,11 @@ function drawBackground() {
     // Clear canvas
     ctx.fillStyle = '#1a1625';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
+
     // Draw grid pattern
     ctx.strokeStyle = 'rgba(167, 139, 250, 0.1)';
     ctx.lineWidth = 1;
-    
+
     const gridSize = 40;
     for (let x = 0; x < canvas.width; x += gridSize) {
         ctx.beginPath();
@@ -303,7 +329,7 @@ function drawBackground() {
         ctx.lineTo(x, canvas.height);
         ctx.stroke();
     }
-    
+
     for (let y = 0; y < canvas.height; y += gridSize) {
         ctx.beginPath();
         ctx.moveTo(0, y);
@@ -316,14 +342,14 @@ function drawGround() {
     const gradient = ctx.createLinearGradient(0, 0, 0, CONFIG.game.groundHeight);
     gradient.addColorStop(0, 'rgba(236, 72, 153, 0.3)');
     gradient.addColorStop(1, 'rgba(236, 72, 153, 0.1)');
-    
+
     // Bottom ground
     ctx.fillStyle = gradient;
     ctx.fillRect(0, canvas.height - CONFIG.game.groundHeight, canvas.width, CONFIG.game.groundHeight);
-    
+
     // Top ground (ceiling)
     ctx.fillRect(0, 0, canvas.width, CONFIG.game.groundHeight);
-    
+
     // Draw lines
     ctx.strokeStyle = '#ec4899';
     ctx.lineWidth = 3;
@@ -331,7 +357,7 @@ function drawGround() {
     ctx.moveTo(0, canvas.height - CONFIG.game.groundHeight);
     ctx.lineTo(canvas.width, canvas.height - CONFIG.game.groundHeight);
     ctx.stroke();
-    
+
     ctx.beginPath();
     ctx.moveTo(0, CONFIG.game.groundHeight);
     ctx.lineTo(canvas.width, CONFIG.game.groundHeight);
@@ -349,7 +375,7 @@ function updateScore() {
 function updateObstacles() {
     for (let i = obstacles.length - 1; i >= 0; i--) {
         obstacles[i].update();
-        
+
         if (obstacles[i].isOffScreen()) {
             obstacles.splice(i, 1);
         }
@@ -359,7 +385,7 @@ function updateObstacles() {
 function updateParticles() {
     for (let i = particles.length - 1; i >= 0; i--) {
         particles[i].update();
-        
+
         if (particles[i].isDead()) {
             particles.splice(i, 1);
         }
@@ -400,7 +426,7 @@ function startGame() {
     // Hide start screen
     startScreen.classList.add('hidden');
     gameHint.classList.remove('hidden');
-    
+
     // Reset game state
     gameState.isRunning = true;
     gameState.score = 0;
@@ -408,21 +434,21 @@ function startGame() {
     obstacles.length = 0;
     particles.length = 0;
     lastObstacleFrame = 0;
-    
+
     // Reset player
     player.reset();
-    
+
     // Start game loop
     gameLoop();
 }
 
 function gameOver() {
     gameState.isRunning = false;
-    
+
     // Update high score
     const finalScore = Math.floor(gameState.score);
     finalScoreEl.textContent = finalScore;
-    
+
     if (finalScore > gameState.highScore) {
         gameState.highScore = finalScore;
         localStorage.setItem('gravityRunnerHighScore', finalScore);
@@ -431,7 +457,7 @@ function gameOver() {
     } else {
         newHighScoreEl.classList.remove('show');
     }
-    
+
     // Show game over screen
     gameOverScreen.classList.remove('hidden');
 }
